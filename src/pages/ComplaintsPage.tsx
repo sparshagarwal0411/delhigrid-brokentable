@@ -365,7 +365,7 @@ const ComplaintsPage = () => {
                         placeholder="e.g. Near Rohini Metro Stn, Sector 5..."
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="h-14 pl-12 bg-white/50 border-border/50 focus:border-primary/50 focus:ring-primary/10 rounded-2xl transition-all shadow-sm group-hover/input:shadow-md font-medium"
+                        className="h-14 pl-12 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/10 rounded-2xl transition-all shadow-sm group-hover/input:shadow-md font-medium"
                       />
                     </div>
                   </motion.div>
@@ -383,7 +383,7 @@ const ComplaintsPage = () => {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={5}
-                      className="resize-none bg-white/50 border-border/50 focus:border-primary/50 focus:ring-primary/10 rounded-2xl transition-all shadow-sm hover:shadow-md font-medium p-4"
+                      className="resize-none bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/10 rounded-2xl transition-all shadow-sm hover:shadow-md font-medium p-4"
                     />
                   </motion.div>
 
