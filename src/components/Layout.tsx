@@ -26,7 +26,7 @@ interface LayoutProps {
 
 export function Layout({ children, showFooter = true }: LayoutProps) {
   const navigate = useNavigate();
-  
+
   // --- Sidebar Global State ---
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userData, setUserData] = useState<any | null>(null);
@@ -55,10 +55,10 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
         .from("users")
         .select("id, ward_number, role")
         .eq("id", session.user.id);
-      
+
       if (profiles && profiles[0]) {
         setUserData(profiles[0]);
-        
+
         // 4. Fetch User Complaints if logged in
         setLoadingComplaints(true);
         const { data: complaints } = await supabase
@@ -66,7 +66,7 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
           .select("*")
           .eq("user_id", session.user.id)
           .order("created_at", { ascending: false });
-          
+
         if (complaints) setUserComplaints(complaints);
         setLoadingComplaints(false);
       }
@@ -78,24 +78,24 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      
+
       {/* Main Layout Container (Below Fixed Navbar) 
         Uses 'items-start' to ensure sidebar stays at top while content scrolls
       */}
-      <div className="pt-16 flex flex-1 items-start">
-        
+      <div className="pt-16 flex flex-1 items-start flex-row-reverse">
+
         {/* --- Sidebar Handle (Visible only when closed) --- */}
         <AnimatePresence>
           {!sidebarOpen && (
             <motion.div
-              initial={{ x: -20, opacity: 0 }}
+              initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -20, opacity: 0 }}
-              className="fixed left-0 top-32 z-40 hidden md:block"
+              exit={{ x: 20, opacity: 0 }}
+              className="fixed right-0 top-32 z-40 hidden md:block"
             >
               <Button
                 onClick={() => setSidebarOpen(true)}
-                className="h-16 w-6 rounded-l-none rounded-r-xl border border-l-0 shadow-md p-0 flex items-center justify-center hover:w-10 transition-all group 
+                className="h-16 w-6 rounded-r-none rounded-l-xl border border-r-0 shadow-md p-0 flex items-center justify-center hover:w-10 transition-all group 
                 
                 /* LIGHT MODE: Dark Greyish Blue background, White text */
                 bg-slate-700 text-white hover:bg-slate-800
@@ -103,7 +103,7 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
                 /* DARK MODE: White background, Dark Slate text */
                 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-200"
               >
-                <ChevronRight className="h-4 w-4 transition-colors" />
+                <ChevronRight className="h-4 w-4 transition-colors rotate-180" />
               </Button>
             </motion.div>
           )}
@@ -118,7 +118,7 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
           initial={{ width: 0 }}
           animate={{ width: sidebarOpen ? 400 : 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="shrink-0 h-[calc(100vh-4rem)] sticky top-16 bg-background border-r overflow-hidden z-30"
+          className="shrink-0 h-[calc(100vh-4rem)] sticky top-16 bg-background border-l overflow-hidden z-30"
         >
           {/* Inner container with fixed width prevents content squishing during animation */}
           <div className="w-[400px] h-full flex flex-col">
@@ -183,7 +183,7 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {loadingComplaints ? (
                       <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -211,7 +211,7 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
                       <div className="text-center py-12 text-muted-foreground">You haven't submitted any complaints.</div>
                     )}
                   </div>
-                  
+
                   <div className="p-4 border-t bg-muted/10">
                     <Button className="w-full" onClick={() => { setSidebarOpen(false); navigate("/complaints"); }}>
                       File New Complaint
@@ -233,7 +233,7 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
         </div>
 
       </div>
-      
+
       <FloatingActionButtons />
     </div>
   );

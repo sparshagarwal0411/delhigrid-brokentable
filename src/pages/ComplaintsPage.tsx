@@ -217,7 +217,7 @@ const ComplaintsPage = () => {
 
       if (sessionError || !session) {
         setLoading(false);
-        return; 
+        return;
       }
 
       const { data: profiles, error: profileError } = await supabase
@@ -278,28 +278,29 @@ const ComplaintsPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-10"
+          transition={{ duration: 0.6 }}
+          className="mb-12 relative overflow-hidden p-8 rounded-[2rem] bg-glass premium-gradient border-none shadow-2xl group"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-              className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25"
-            >
-              <AlertCircle className="h-6 w-6 text-primary-foreground" />
-            </motion.div>
-            <div>
-              <h1 className="text-3xl font-heading font-bold tracking-tight">File a Complaint</h1>
-              <p className="text-muted-foreground text-sm mt-0.5">
-                AI-powered analysis • Location-based ward assignment
-              </p>
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700" />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="h-14 w-14 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                <AlertCircle className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-black font-heading tracking-tighter">File a Complaint</h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="px-3 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold border border-success/20 uppercase tracking-widest">
+                    AI Enabled
+                  </div>
+                </div>
+              </div>
             </div>
+            <p className="text-muted-foreground text-lg font-medium leading-relaxed max-w-xl">
+              Report environmental concerns in your neighborhood. AI will automatically identify the correct <span className="text-primary font-bold">Ward (1-250)</span> and suggest immediate actions.
+            </p>
           </div>
-          <p className="text-muted-foreground max-w-xl">
-            Describe the problem, add a photo if you have one. AI will categorize and suggest next steps. Report to authorities when the suggestion doesn&apos;t help.
-          </p>
         </motion.div>
 
         {!userData ? (
@@ -336,48 +337,53 @@ const ComplaintsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
             >
-              <Card className="overflow-hidden border-2 shadow-xl shadow-black/5 dark:shadow-none">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
-                <CardHeader className="relative pb-4">
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <Sparkles className="h-5 w-5 text-primary" />
-                    Report an issue
+              <Card className="overflow-hidden border-none shadow-2xl bg-glass backdrop-blur-xl relative group">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                  <Bot className="h-32 w-32" />
+                </div>
+                <CardHeader className="relative pb-6 border-b border-border/10">
+                  <CardTitle className="flex items-center gap-3 text-2xl font-black tracking-tight">
+                    <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+                    Problem Details
                   </CardTitle>
-                  <CardDescription>
-                    Be specific. Include location for accurate ward assignment.
+                  <CardDescription className="text-base font-medium">
+                    Provide location and description for the AI assistant.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="relative space-y-5">
+                <CardContent className="relative space-y-8 pt-8 px-8 pb-10">
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.15 }}
-                    className="space-y-2"
+                    className="space-y-3"
                   >
-                    <Label htmlFor="complaint-location" className="text-sm font-medium">Location</Label>
-                    <Input
-                      id="complaint-location"
-                      placeholder="e.g. Rohini Sector 5, near Connaught Place..."
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      className="h-11 bg-background/60 border-2 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
-                    />
+                    <Label htmlFor="complaint-location" className="text-sm font-bold uppercase tracking-widest text-muted-foreground/80">Physical Location</Label>
+                    <div className="relative group/input">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors group-focus-within/input:text-primary" />
+                      <Input
+                        id="complaint-location"
+                        placeholder="e.g. Near Rohini Metro Stn, Sector 5..."
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="h-14 pl-12 bg-white/50 border-border/50 focus:border-primary/50 focus:ring-primary/10 rounded-2xl transition-all shadow-sm group-hover/input:shadow-md font-medium"
+                      />
+                    </div>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="space-y-2"
+                    className="space-y-3"
                   >
-                    <Label htmlFor="complaint-desc" className="text-sm font-medium">Problem description</Label>
+                    <Label htmlFor="complaint-desc" className="text-sm font-bold uppercase tracking-widest text-muted-foreground/80">Issue Description</Label>
                     <Textarea
                       id="complaint-desc"
-                      placeholder="e.g. Garbage is being dumped on the street near Block A. Strong smell and flies..."
+                      placeholder="Be specific about what you see (e.g., 'Illegal garbage burning...', 'Burst water pipe...')"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      rows={4}
-                      className="resize-none bg-background/60 border-2 focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                      rows={5}
+                      className="resize-none bg-white/50 border-border/50 focus:border-primary/50 focus:ring-primary/10 rounded-2xl transition-all shadow-sm hover:shadow-md font-medium p-4"
                     />
                   </motion.div>
 
@@ -385,10 +391,10 @@ const ComplaintsPage = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.25 }}
-                    className="space-y-2"
+                    className="space-y-3"
                   >
-                    <Label className="text-sm font-medium">Photo (optional)</Label>
-                    <label className="flex flex-col items-center justify-center w-full min-h-[140px] border-2 border-dashed rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group">
+                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground/80">Upload Proof (Recommended)</Label>
+                    <label className="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-border/50 rounded-[1.5rem] cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group/upload relative overflow-hidden shadow-inner">
                       <input
                         type="file"
                         accept="image/*"
@@ -396,35 +402,36 @@ const ComplaintsPage = () => {
                         onChange={handlePhotoChange}
                       />
                       {photoPreview ? (
-                        <div className="relative w-full h-full min-h-[140px] rounded-xl overflow-hidden group">
+                        <div className="relative w-full h-full min-h-[160px] rounded-[1.5rem] overflow-hidden">
                           <img
                             src={photoPreview}
                             alt="Preview"
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-300"
+                            className="w-full h-full object-cover transition-transform group-hover/upload:scale-105 duration-700"
                           />
                           <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                            className="absolute inset-0 bg-black/40 opacity-0 group-hover/upload:opacity-100 transition-opacity flex items-center justify-center gap-4"
                           >
                             <Button
                               type="button"
                               variant="destructive"
-                              size="icon"
-                              className="h-9 w-9 rounded-full shadow-lg"
+                              className="h-12 w-12 rounded-full shadow-2xl"
                               onClick={(e) => { e.preventDefault(); removePhoto(); }}
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-6 w-6" />
                             </Button>
                           </motion.div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground group-hover:text-foreground transition-colors">
-                          <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                            <ImagePlus className="h-7 w-7" />
+                        <div className="flex flex-col items-center gap-3 py-10 text-muted-foreground group-hover/upload:text-primary transition-all">
+                          <div className="h-16 w-16 rounded-3xl bg-muted/50 flex items-center justify-center group-hover/upload:bg-primary/10 group-hover/upload:scale-110 transition-all duration-500">
+                            <ImagePlus className="h-8 w-8" />
                           </div>
-                          <span className="text-sm font-medium">Click to upload or drag & drop</span>
-                          <span className="text-xs">JPG, PNG or WebP</span>
+                          <div className="text-center">
+                            <span className="block text-sm font-bold">Tap to upload photo</span>
+                            <span className="text-[10px] uppercase font-black tracking-widest opacity-60 mt-1">PNG, JPG, HEIC up to 10MB</span>
+                          </div>
                         </div>
                       )}
                     </label>
@@ -434,27 +441,28 @@ const ComplaintsPage = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
+                    className="pt-4"
                   >
                     <Button
                       size="lg"
-                      className="w-full h-12 text-base font-semibold gap-2 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                      className="w-full h-16 text-lg font-black rounded-2xl gap-3 shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1 bg-primary text-white"
                       onClick={handleAnalyze}
                       disabled={analyzing || (!analysis && !description.trim() && !photo) || !geminiOk}
                     >
                       {analyzing ? (
                         <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Analyzing with AI...
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                          Analyzing Situation...
                         </>
                       ) : analysis ? (
                         <>
-                          <Bot className="h-5 w-5" />
-                          View suggestion again
+                          <Bot className="h-6 w-6" />
+                          Review Diagnostic
                         </>
                       ) : (
                         <>
-                          <Bot className="h-5 w-5" />
-                          Get AI suggestion
+                          <Sparkles className="h-6 w-6" />
+                          Analyze with Gemini AI
                         </>
                       )}
                     </Button>

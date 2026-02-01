@@ -32,8 +32,10 @@ const CATEGORIES: ComplaintCategory[] = [
   "land",
 ];
 
-// Compact area→ward_id for Gemini. Delhi areas map to ward 1-50.
-const WARD_MAP = "Rohini=45, Dwarka=12, Connaught Place=41, CP=41, Karol Bagh=7, Lajpat Nagar=21, Mayur Vihar=26, Vasant Kunj=16, Janakpuri=11, Pitampura=44, Shalimar Bagh=46, Greater Kailash=19, GK=19, Defence Colony=20, Chandni Chowk=36, Civil Lines=6, Narela=1, Model Town=4, Okhla=22, Mehrauli=17, Dilshad Garden=33, Preet Vihar=27, Najafgarh=13, Palam=14, Badarpur=24, Sarita Vihar=25, Rajouri Garden=8, India Gate=42, Lodhi Colony=43, Wazirpur=47, Ashok Vihar=48, Mangolpuri=49, Sultanpuri=50, Seelampur=34, Daryaganj=37, Paharganj=38, RK Puram=39, Sarojini Nagar=40";
+// Compact area→ward_id for Gemini. 
+// Note: This is an expanded sample as we have 250 wards now. 
+// We should instruct Gemini to use the area name to find the best match ward index (1-250) based on its knowledge of Delhi.
+const WARD_MAP_INSTRUCTION = "I have 250 wards in Delhi. The wards are named after these major areas (repeating as Ward 1, Ward 2...): Narela, Bakhtawarpur, Alipur, Model Town, Sadar Bazar, Civil Lines, Karol Bagh, Rajouri Garden, Hari Nagar, Tilak Nagar, Janakpuri, Dwarka, Najafgarh, Palam, Delhi Cantt, Vasant Kunj, Mehrauli, Sangam Vihar, Greater Kailash, Defence Colony, Lajpat Nagar, Okhla, Tughlakabad, Badarpur, Sarita Vihar, Mayur Vihar, Preet Vihar, Laxmi Nagar, Shakarpur, Gandhi Nagar, Krishna Nagar, Vivek Vihar, Dilshad Garden, Seelampur, Jama Masjid, Chandni Chowk, Daryaganj, Paharganj, RK Puram, Sarojini Nagar, Connaught Place, India Gate, Lodhi Colony, Pitampura, Rohini, Shalimar Bagh, Wazirpur, Ashok Vihar, Mangolpuri, Sultanpuri. If as specific location like 'Rohini Sector 7' is given, pick the most relevant Rohini ward ID. Wards 1-250 are sequentially distributed.";
 
 /**
  * Analyze complaint - Gemini does category, suggestion, and ward from location.
@@ -73,13 +75,13 @@ Respond with ONLY valid JSON (no markdown, no code blocks). Use single quotes in
 
 Format: {"category": "air|water|noise|transport|soil|land", "suggestion": "Your specific suggestion", "ward_id": <number>}
 
-DELHI AREA TO WARD MAP (pick ward_id from the area that matches the location):
-${WARD_MAP}
+WARD SYSTEM INFO:
+${WARD_MAP_INSTRUCTION}
 
 RULES:
 - category: air|water|noise|transport|soil|land (air=pollution/smoke, water=drainage/sewage, noise=construction/honking, transport=traffic/roads, soil=waste dumping, land=encroachment)
 - suggestion: SPECIFIC advice - helplines (MCD 155304, DPCC), actions (visit ward office, edmc.gov.in), contacts. NOT generic. 2-4 sentences.
-- ward_id: Match location to area in the map. Rohini/rohini sector X -> 45, Dwarka -> 12, Connaught Place/CP -> 41, Karol Bagh -> 7, Lajpat Nagar -> 21. If no match use ${fallbackWardId || 1}.
+- ward_id: MUST BE A NUMBER BETWEEN 1 AND 250. Analyze the location (e.g., 'Rohini Sector 5') and map it to the most relevant ward ID based on the area names provided. If you are unsure, use ${fallbackWardId || 1}.
 ${locationLine}
 
 Complaint:

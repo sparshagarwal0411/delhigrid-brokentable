@@ -626,8 +626,13 @@ const AuthorityDashboard = () => {
                       <CardTitle className="text-xl font-bold">Zone Performance Matrix</CardTitle>
                       <CardDescription>Average city hygiene score by administrative zone</CardDescription>
                     </div>
-                    <div className="p-2 rounded-lg bg-primary/5">
-                      <TrendingUpIcon className="h-5 w-5 text-primary" />
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 rounded-2xl bg-success/10 text-success">
+                        <TrendingUpIcon className="h-5 w-5 text-success" />
+                      </div>
+                      <div>
+                        <TrendingUpIcon className="h-5 w-5 text-primary" />
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
@@ -743,7 +748,7 @@ const AuthorityDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-success" />
+                    <TrendingUpIcon className="h-5 w-5 text-success" />
                     Top Performing Wards
                   </CardTitle>
                 </CardHeader>
@@ -830,7 +835,7 @@ const AuthorityDashboard = () => {
                           {zone.trend < 0 ? (
                             <TrendingDown className="h-4 w-4" />
                           ) : (
-                            <TrendingUp className="h-4 w-4" />
+                            <TrendingUpIcon className="h-4 w-4" />
                           )}
                           {Math.abs(zone.trend)}%
                         </div>
