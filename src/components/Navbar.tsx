@@ -13,65 +13,48 @@ import {
   IndianRupee,
   ShoppingBag,
   FileWarning,
-  Coins,
   User,
-  ChevronDown
+  ChevronDown,
+  Coins
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<"citizen" | "admin" | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // New States for Profile & Wallet
-  const [walletBalance, setWalletBalance] = useState<number>(0);
-  const [userName, setUserName] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => location.pathname === path;
 
+  const fetchUserData = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    if (profile) {
+      setUserData(profile);
+    }
+  };
+
   useEffect(() => {
-    // Check authentication status & Fetch User Data
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-
         if (session) {
           setIsAuthenticated(true);
-
-          // Get user email as fallback name
-          const emailName = session.user.email?.split('@')[0] || "User";
-
-          // Fetch user details from 'users' table
-          const { data: profile, error: profileError } = await supabase
-            .from("users")
-            .select("role, wallet_balance, full_name")
-            .eq("id", session.user.id)
-            .single();
-
-          if (profile && !profileError) {
-            setUserRole(profile.role as "citizen" | "admin");
-            setWalletBalance(profile.wallet_balance || 0);
-            setUserName(profile.full_name || emailName);
-          } else {
-            // Fallback if profile fetch fails
-            setUserName(emailName);
-          }
+          await fetchUserData(session.user.id);
         } else {
           setIsAuthenticated(false);
-          setUserRole(null);
+          setUserData(null);
         }
       } catch (error) {
         console.error("Error checking auth:", error);
-        setIsAuthenticated(false);
-        setUserRole(null);
       } finally {
         setLoading(false);
       }
@@ -79,48 +62,19 @@ export function Navbar() {
 
     checkAuth();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
         setIsAuthenticated(false);
-        setUserRole(null);
-        setWalletBalance(0);
-        setUserName("");
+        setUserData(null);
         return;
       }
-
-      if (session && session.user) {
+      if (session) {
         setIsAuthenticated(true);
-        // Re-fetch profile on auth change to ensure sync
-        supabase
-          .from("users")
-          .select("role, wallet_balance, full_name")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (profile) {
-              setUserRole(profile.role as "citizen" | "admin");
-              setWalletBalance(profile.wallet_balance || 0);
-              setUserName(profile.full_name || session.user.email?.split('@')[0] || "User");
-            }
-          });
+        fetchUserData(session.user.id);
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSignOut = async (e?: React.MouseEvent) => {
@@ -128,37 +82,27 @@ export function Navbar() {
       e.preventDefault();
       e.stopPropagation();
     }
-
-    try {
-      setIsAuthenticated(false);
-      setUserRole(null);
-      setIsOpen(false);
-      setIsDropdownOpen(false);
-
-      const { error } = await supabase.auth.signOut();
-      if (error) console.error("Sign out error:", error);
-
-      navigate("/", { replace: true });
-    } catch (error) {
-      console.error("Error signing out:", error);
-      navigate("/", { replace: true });
-    }
+    setIsDropdownOpen(false);
+    setIsOpen(false);
+    await supabase.auth.signOut();
+    navigate("/", { replace: true });
   };
-
-  // Determine dashboard path
-  const dashboardPath = userRole === "admin" ? "/authority" : "/citizen";
 
   const navLinks = [
     { to: "/", label: "Home", icon: Leaf },
     { to: "/map", label: "Ward Map", icon: MapPin },
-    ...(isAuthenticated && userRole === "citizen" ? [
+    ...(isAuthenticated && userData?.role === "admin" ? [{ to: "/authority", label: "Authority Portal", icon: LayoutDashboard }] : []),
+    ...(isAuthenticated && userData?.role === "citizen" ? [
+      { to: "/citizen", label: "Citizen Dashboard", icon: Users },
       { to: "/marketplace", label: "Marketplace", icon: ShoppingBag },
       { to: "/complaints", label: "Complaints", icon: FileWarning }
     ] : []),
-    ...(isAuthenticated && userRole === "admin" ? [
-      { to: "/authority", label: "Portal", icon: LayoutDashboard }
-    ] : []),
   ];
+
+  const dashboardPath = userData?.role === "admin" ? "/authority" : "/citizen";
+  const userName = userData ? `${userData.first_name} ${userData.last_name}` : "User";
+  const userRole = userData?.role || "user";
+  const tokens = userData?.score || 0;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -177,7 +121,7 @@ export function Navbar() {
               <Button
                 variant={isActive(link.to) ? "secondary" : "ghost"}
                 size="sm"
-                className="gap-2"
+                className="gap-2 rounded-xl"
               >
                 <link.icon className="h-4 w-4" />
                 {link.label}
@@ -186,83 +130,84 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-3">
           <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-            onClick={() => {
-              const element = document.getElementById('pricing');
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              } else {
-                navigate('/');
-                setTimeout(() => {
-                  const el = document.getElementById('pricing');
-                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-              }
-            }}
-          >
-            <IndianRupee className="h-4 w-4" />
-            Pricing
-          </Button>
 
-          {/* AUTH SECTION (Desktop) */}
           {isAuthenticated ? (
-            <div className="relative ml-2" ref={dropdownRef}>
-              <div className="flex items-center gap-3">
-                {/* Coins Display */}
-                <div className="flex items-center gap-1.5 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-primary">{walletBalance.toLocaleString()}</span>
+            <div className="flex items-center gap-3">
+              {/* Token Display */}
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 shadow-sm">
+                <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                  <Coins className="h-3 w-3 text-white" />
                 </div>
-
-                {/* Profile Trigger */}
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 hover:opacity-80 transition-opacity focus:outline-none"
-                >
-                  <div className="h-9 w-9 rounded-full bg-muted border flex items-center justify-center text-muted-foreground overflow-hidden">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`} />
-                </button>
+                <span className="text-sm font-bold tracking-tight">{tokens} Tokens</span>
               </div>
 
-              {/* Custom Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute right-0 top-12 w-56 rounded-lg border bg-popover shadow-xl animate-in fade-in slide-in-from-top-2 z-50 overflow-hidden">
-                  <div className="px-4 py-3 border-b bg-muted/30">
-                    <p className="text-sm font-semibold truncate">{userName}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{userRole}</p>
+              {/* Profile Dropdown */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 px-2 hover:bg-muted rounded-full"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-md">
+                    <User className="h-4 w-4" />
                   </div>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </Button>
 
-                  <div className="p-1">
-                    <Link to={dashboardPath} onClick={() => setIsDropdownOpen(false)}>
-                      <div className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors">
-                        <User className="h-4 w-4" />
-                        <span>Profile & Dashboard</span>
-                      </div>
-                    </Link>
-
-                    <div className="h-px bg-border my-1" />
-
+                {isDropdownOpen && (
+                  <>
                     <div
-                      onClick={handleSignOut}
-                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-destructive/10 hover:text-destructive text-destructive cursor-pointer transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Sign Out</span>
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 top-12 w-64 rounded-2xl border bg-popover shadow-2xl animate-in fade-in slide-in-from-top-2 z-50 overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                      <div className="px-5 py-4 border-b bg-muted/20 backdrop-blur-md">
+                        <p className="text-sm font-bold truncate leading-none mb-1">{userName}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{userRole} Account</p>
+                      </div>
+
+                      <div className="p-1.5">
+                        <Link to={dashboardPath} onClick={() => setIsDropdownOpen(false)}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200">
+                            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <LayoutDashboard className="h-4 w-4" />
+                            </div>
+                            <span>My Dashboard</span>
+                          </div>
+                        </Link>
+
+                        <Link to="/profile" onClick={() => setIsDropdownOpen(false)}>
+                          <div className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-xl hover:bg-primary/10 hover:text-primary cursor-pointer transition-all duration-200 mt-1">
+                            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <User className="h-4 w-4" />
+                            </div>
+                            <span>Edit Profile</span>
+                          </div>
+                        </Link>
+
+                        <div className="h-px bg-border my-1.5 mx-2" />
+
+                        <div
+                          onClick={handleSignOut}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold rounded-xl hover:bg-destructive/10 hover:text-destructive text-destructive cursor-pointer transition-all duration-200"
+                        >
+                          <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center">
+                            <LogOut className="h-4 w-4" />
+                          </div>
+                          <span>Sign Out</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           ) : (
             <Link to="/auth">
-              <Button variant="civic" size="sm" className="gap-2">
+              <Button variant="civic" size="sm" className="gap-2 px-6 rounded-full shadow-lg shadow-primary/20">
                 <LogIn className="h-4 w-4" />
                 Sign In
               </Button>
@@ -272,11 +217,18 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <div className="flex md:hidden items-center gap-2">
+          {isAuthenticated && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 text-primary rounded-full border border-primary/20 mr-1">
+              <Coins className="h-3.5 w-3.5" />
+              <span className="text-xs font-bold">{tokens}</span>
+            </div>
+          )}
           <ThemeToggle />
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(!isOpen)}
+            className="rounded-xl"
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -285,30 +237,17 @@ export function Navbar() {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden border-t bg-background animate-slide-down">
-          <div className="container py-4 space-y-2">
+        <div className="md:hidden border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-in slide-in-from-top duration-300">
+          <div className="container py-6 space-y-2">
             {isAuthenticated && (
-              <div className="mb-4 p-4 bg-muted/50 rounded-lg border">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-full bg-background border flex items-center justify-center">
-                    <User className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{userName}</p>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Coins className="h-3 w-3 text-primary" />
-                      <span className="font-medium text-primary">{walletBalance.toLocaleString()} Points</span>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-4 p-4 mb-4 rounded-2xl bg-muted/50 border">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-md">
+                  <User className="h-6 w-6" />
                 </div>
-                <Link
-                  to={dashboardPath}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Button variant="outline" size="sm" className="w-full text-xs h-8">
-                    View Profile
-                  </Button>
-                </Link>
+                <div>
+                  <div className="font-bold">{userName}</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest font-bold">{userRole}</div>
+                </div>
               </div>
             )}
 
@@ -320,31 +259,39 @@ export function Navbar() {
               >
                 <Button
                   variant={isActive(link.to) ? "secondary" : "ghost"}
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-4 h-12 rounded-xl text-base font-semibold"
                 >
-                  <link.icon className="h-4 w-4" />
+                  <link.icon className="h-5 w-5" />
                   {link.label}
                 </Button>
               </Link>
             ))}
 
             {isAuthenticated ? (
-              <Button
-                variant="civic-outline"
-                className="w-full gap-2 mt-4 text-destructive border-destructive/20 hover:bg-destructive/10"
-                onClick={(e) => {
-                  setIsOpen(false);
-                  handleSignOut(e);
-                }}
-                type="button"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
+              <>
+                <Link to="/profile" onClick={() => setIsOpen(false)}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-4 h-12 rounded-xl text-base font-semibold"
+                  >
+                    <User className="h-5 w-5" />
+                    Edit Profile
+                  </Button>
+                </Link>
+                <div className="h-px bg-border my-2" />
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-4 h-12 rounded-xl text-base font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-5 w-5" />
+                  Sign Out
+                </Button>
+              </>
             ) : (
               <Link to="/auth" onClick={() => setIsOpen(false)}>
-                <Button variant="civic" className="w-full gap-2 mt-2">
-                  <LogIn className="h-4 w-4" />
+                <Button variant="civic" className="w-full h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/20 mt-4">
+                  <LogIn className="h-5 w-5 mr-2" />
                   Sign In
                 </Button>
               </Link>

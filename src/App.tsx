@@ -20,6 +20,7 @@ import Marketplace from "./pages/Marketplace";
 import ComplaintsPage from "./pages/ComplaintsPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import AdminPendingPage from "./pages/AdminPendingPage";
+import EditProfile from "./pages/EditProfile";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/complaints" element={<ComplaintsPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/admin-pending" element={<AdminPendingPage />} />
+            <Route path="/profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
