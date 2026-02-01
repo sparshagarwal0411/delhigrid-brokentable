@@ -44,8 +44,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Camera,
-  Upload
+  Upload,
+  Wind,
+  Loader2,
+  ChevronRight
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   Dialog,
@@ -151,15 +155,13 @@ const STATIC_TASKS: Task[] = [
 ];
 
 const getAQICategory = (aqi: number) => {
-  if (aqi <= 50) return { label: 'Good', color: 'text-success', bg: 'bg-success/10' };
-  if (aqi <= 100) return { label: 'Moderate', color: 'text-info', bg: 'bg-info/10' };
-  if (aqi <= 150) return { label: 'Unhealthy for Sensitive', color: 'text-warning', bg: 'bg-warning/10' };
-  if (aqi <= 200) return { label: 'Unhealthy', color: 'text-destructive', bg: 'bg-destructive/10' };
-  if (aqi <= 300) return { label: 'Very Unhealthy', color: 'text-destructive', bg: 'bg-destructive/20' };
-  return { label: 'Hazardous', color: 'text-destructive', bg: 'bg-destructive/30' };
+  if (aqi <= 50) return { label: 'Good', color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' };
+  if (aqi <= 100) return { label: 'Moderate', color: 'text-info', bg: 'bg-info/10', border: 'border-info/20' };
+  if (aqi <= 150) return { label: 'Unhealthy for Sensitive', color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20' };
+  if (aqi <= 200) return { label: 'Unhealthy', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' };
+  if (aqi <= 300) return { label: 'Very Unhealthy', color: 'text-destructive', bg: 'bg-destructive/20', border: 'border-destructive/30' };
+  return { label: 'Hazardous', color: 'text-destructive', bg: 'bg-destructive/30', border: 'border-destructive/40' };
 };
-
-import { Wind, Loader2 } from "lucide-react";
 
 const CitizenDashboard = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -549,81 +551,93 @@ const CitizenDashboard = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
+      <div className="container py-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row gap-6 items-start justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-heading font-bold mb-2">Citizen Dashboard</h1>
-            <p className="text-muted-foreground">
-              Track your progress and take action for a cleaner {ward?.name || "ward"}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row gap-6 items-center justify-between mb-10 p-8 rounded-3xl bg-glass premium-gradient border-none relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-secondary/10 rounded-full blur-3xl" />
+
+          <div className="relative z-10">
+            <h1 className="text-4xl font-heading font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-600 to-secondary leading-tight">
+              Welcome Back, {userName.split(' ')[0]}!
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-md">
+              Your contribution makes <span className="text-primary font-bold">{ward?.name || "your ward"}</span> cleaner and greener.
             </p>
           </div>
+
           <Dialog open={isChangeWardOpen} onOpenChange={setIsChangeWardOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Card className="p-4 cursor-pointer hover:bg-accent/5 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-6 w-6 text-primary" />
+                <div className="group relative z-10">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary to-secondary rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                  <Card className="relative p-2 h-auto cursor-pointer hover:bg-card transition-all duration-300 border-none bg-white/50 backdrop-blur-sm shadow-xl flex items-center gap-4 px-6 py-4 rounded-xl">
+                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20">
+                      <User className="h-7 w-7 text-white" />
                     </div>
                     <div>
-                      <div className="font-semibold">{userName}</div>
-                      <div className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        Ward {userData?.ward_number}
+                      <div className="font-bold text-lg">{userName}</div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-1 font-medium">
+                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                        Ward {userData?.ward_number} • {ward?.name}
                       </div>
                     </div>
-                  </div>
-                </Card>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform ml-2" />
+                  </Card>
+                </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-[200px] bg-glass backdrop-blur-xl border-border/50">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => {
                   setNewWardNumber(userData?.ward_number.toString() || "");
                   setIsChangeWardOpen(true);
-                }}>
-                  <Settings className="mr-2 h-4 w-4" />
+                }} className="py-3 px-4 focus:bg-primary/10 cursor-pointer">
+                  <Settings className="mr-3 h-4 w-4" />
                   Change Ward
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => {
                   supabase.auth.signOut().then(() => navigate("/auth"));
-                }} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
+                }} className="text-destructive py-3 px-4 focus:bg-destructive/10 cursor-pointer">
+                  <LogOut className="mr-3 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <DialogContent>
+            <DialogContent className="bg-glass backdrop-blur-xl border-none shadow-2xl">
               <DialogHeader>
-                <DialogTitle>Change Ward</DialogTitle>
-                <DialogDescription>
-                  Enter your new ward number (1-250) to update your location.
+                <DialogTitle className="text-2xl font-bold">Change Your Ward</DialogTitle>
+                <DialogDescription className="text-base">
+                  Update your location to get accurate pollution data for your area.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="ward" className="text-right">
-                    Ward
+              <div className="grid gap-6 py-6">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="ward" className="text-sm font-semibold text-muted-foreground px-1">
+                    Select Ward Number
                   </Label>
-                  <div className="col-span-3">
-                    <WardSelector
-                      value={newWardNumber ? parseInt(newWardNumber) : undefined}
-                      onChange={(val) => setNewWardNumber(val.toString())}
-                    />
-                  </div>
+                  <WardSelector
+                    value={newWardNumber ? parseInt(newWardNumber) : undefined}
+                    onChange={(val) => setNewWardNumber(val.toString())}
+                  />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsChangeWardOpen(false)}>Cancel</Button>
-                <Button onClick={handleUpdateWard} disabled={updatingWard}>
-                  {updatingWard ? "Updating..." : "Save Changes"}
+                <Button variant="ghost" onClick={() => setIsChangeWardOpen(false)} className="rounded-xl">Cancel</Button>
+                <Button onClick={handleUpdateWard} disabled={updatingWard} className="bg-primary hover:bg-primary/90 text-white rounded-xl px-8 shadow-lg shadow-primary/20">
+                  {updatingWard ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Save Changes
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </div>
+        </motion.div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -631,120 +645,172 @@ const CitizenDashboard = () => {
             {/* Ward Pollution Summary */}
             {ward && (
               <div className="space-y-4">
-                <Card variant="civic">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      Your Ward: {ward.name}
-                    </CardTitle>
-                    <div className="flex items-center justify-between">
-                      <CardDescription>Current pollution status and trends</CardDescription>
-                      {ward.trafficStatus && (
-                        <TrafficIndicator status={ward.trafficStatus} className="scale-90 origin-right" />
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col md:flex-row gap-6 items-center">
-                      <PollutionScore score={ward.pollutionScore} size="lg" />
-                      <div className="flex-1 grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Air Quality</div>
-                          <div className="text-xl font-semibold">{ward.airQuality}/100</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Water Quality</div>
-                          <div className="text-xl font-semibold">{ward.waterQuality}/100</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Waste Management</div>
-                          <div className="text-xl font-semibold">{ward.wasteManagement}/100</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Noise Level</div>
-                          <div className="text-xl font-semibold">{ward.noiseLevel}/100</div>
-                        </div>
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <Card className="bg-glass border-none shadow-xl overflow-hidden group">
+                    <CardHeader className="pb-4 relative">
+                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <MapPin className="h-20 w-20 text-primary" />
                       </div>
-                      <div className="space-y-2">
-                        <TrendIndicator value={ward.trend7Days} label="7 days" />
-                        <TrendIndicator value={ward.trend30Days} label="30 days" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Live AQI Display */}
-                {wardWithAQI && wardWithAQI.aqi !== undefined && wardWithAQI.aqi !== null && (
-                  <Card className="border-2 border-primary/20">
-                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center gap-3 text-2xl font-bold">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <MapPin className="h-6 w-6 text-primary" />
+                        </div>
+                        {ward.name}
+                      </CardTitle>
                       <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                          <Gauge className="h-5 w-5 text-primary" />
-                          Live Air Quality Index (AQI)
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                          {isUsingRealData && (
-                            <Badge variant="default" className="bg-success text-success-foreground">
-                              Live
-                            </Badge>
-                          )}
-                          <Button variant="ghost" size="icon" onClick={refetch} disabled={pollutionLoading}>
-                            <RefreshCw className={`h-4 w-4 ${pollutionLoading ? 'animate-spin' : ''}`} />
-                          </Button>
-                        </div>
+                        <CardDescription className="text-base font-medium">Environmental Health Dashboard</CardDescription>
+                        {ward.trafficStatus && (
+                          <TrafficIndicator status={ward.trafficStatus} className="scale-105 origin-right" />
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center gap-6">
-                        <div className="text-center">
-                          <div className="text-5xl font-bold text-primary">{wardWithAQI.aqi}</div>
-                          <div className="text-sm text-muted-foreground mt-1">AQI</div>
+                      <div className="flex flex-col md:flex-row gap-8 items-center p-4 bg-primary/[0.03] rounded-2xl border border-primary/5">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-75 animate-pulse" />
+                          <PollutionScore score={ward.pollutionScore} size="xl" />
                         </div>
-                        <div className="flex-1">
-                          {(() => {
-                            const category = getAQICategory(wardWithAQI.aqi!);
-                            return (
-                              <div className={`p-4 rounded-lg ${category.bg}`}>
-                                <div className={`font-semibold text-lg ${category.color}`}>
-                                  {category.label}
-                                </div>
-                                {wardWithAQI.pm25 && (
-                                  <div className="text-sm text-muted-foreground mt-2">
-                                    PM2.5: {wardWithAQI.pm25} µg/m³
-                                  </div>
-                                )}
-                                {wardWithAQI.lastUpdated && (
-                                  <div className="text-xs text-muted-foreground mt-2">
-                                    Updated: {new Date(wardWithAQI.lastUpdated).toLocaleString()}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })()}
+
+                        <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-2 xl:grid-cols-4 gap-6 w-full">
+                          <div className="space-y-1">
+                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Air</div>
+                            <div className="text-2xl font-bold font-heading">{ward.airQuality}/100</div>
+                            <Progress value={ward.airQuality} className="h-1.5" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Water</div>
+                            <div className="text-2xl font-bold font-heading">{ward.waterQuality}/100</div>
+                            <Progress value={ward.waterQuality} className="h-1.5" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Waste</div>
+                            <div className="text-2xl font-bold font-heading">{ward.wasteManagement}/100</div>
+                            <Progress value={ward.wasteManagement} className="h-1.5" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Noise</div>
+                            <div className="text-2xl font-bold font-heading">{ward.noiseLevel}/100</div>
+                            <Progress value={ward.noiseLevel} className="h-1.5" />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-row md:flex-col gap-4 w-full md:w-auto border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6">
+                          <div className="flex-1">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Trends</p>
+                            <div className="space-y-3">
+                              <TrendIndicator value={ward.trend7Days} label="7D" className="bg-background/50 p-1.5 rounded-lg border border-border/50" />
+                              <TrendIndicator value={ward.trend30Days} label="30D" className="bg-background/50 p-1.5 rounded-lg border border-border/50" />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
+                </motion.div>
+
+                {/* Live AQI Display */}
+                {wardWithAQI && wardWithAQI.aqi !== undefined && wardWithAQI.aqi !== null && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <Card className="bg-glass border-none shadow-xl overflow-hidden relative">
+                      <div className="absolute top-0 right-0 p-8 opacity-5">
+                        <Wind className="h-32 w-32" />
+                      </div>
+                      <CardHeader className="pb-3 border-b border-border/10">
+                        <div className="flex items-center justify-between relative z-10">
+                          <CardTitle className="flex items-center gap-2 text-xl font-bold">
+                            <Gauge className="h-5 w-5 text-primary" />
+                            Live Air Quality Index
+                          </CardTitle>
+                          <div className="flex items-center gap-3">
+                            {isUsingRealData && (
+                              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/20 text-success text-xs font-bold border border-success/20 animate-pulse">
+                                <span className="h-2 w-2 rounded-full bg-success"></span>
+                                LIVE
+                              </div>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={refetch}
+                              disabled={pollutionLoading}
+                              className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors rounded-full"
+                            >
+                              <RefreshCw className={`h-4 w-4 ${pollutionLoading ? 'animate-spin' : ''}`} />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="flex flex-col sm:flex-row items-center gap-8">
+                          <div className="flex flex-col items-center">
+                            <div className="text-7xl font-black text-primary tracking-tighter drop-shadow-sm leading-none">{wardWithAQI.aqi}</div>
+                            <div className="text-sm font-bold text-muted-foreground uppercase tracking-widest mt-2 px-3 py-0.5 rounded-lg bg-muted/50">AQI Units</div>
+                          </div>
+
+                          <div className="flex-1 w-full">
+                            {(() => {
+                              const category = getAQICategory(wardWithAQI.aqi!);
+                              return (
+                                <div className={`p-5 rounded-2xl border-2 ${category.bg} ${category.border} relative overflow-hidden group shadow-inner`}>
+                                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-110 transition-transform duration-700" />
+                                  <div className={`font-black text-2xl mb-1 ${category.color} tracking-tight`}>
+                                    {category.label}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 mt-3">
+                                    {wardWithAQI.pm25 && (
+                                      <div className="bg-white/40 dark:bg-black/20 p-2.5 rounded-xl border border-white/20">
+                                        <div className="text-[10px] font-bold text-muted-foreground uppercase">PM2.5</div>
+                                        <div className="text-lg font-bold">{wardWithAQI.pm25} <span className="text-[10px] font-medium text-muted-foreground">µg/m³</span></div>
+                                      </div>
+                                    )}
+                                    {wardWithAQI.pm10 && (
+                                      <div className="bg-white/40 dark:bg-black/20 p-2.5 rounded-xl border border-white/20">
+                                        <div className="text-[10px] font-bold text-muted-foreground uppercase">PM10</div>
+                                        <div className="text-lg font-bold">{wardWithAQI.pm10} <span className="text-[10px] font-medium text-muted-foreground">µg/m³</span></div>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {wardWithAQI.lastUpdated && (
+                                    <div className="text-xs font-medium text-muted-foreground mt-4 flex items-center gap-1.5 opacity-80">
+                                      <Clock className="h-3 w-3" />
+                                      Updated: {new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).format(new Date(wardWithAQI.lastUpdated))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
                 )}
               </div>
             )}
 
             {/* Tabs for Content */}
-            <Tabs defaultValue="goals" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="goals" className="gap-2">
+            <Tabs defaultValue="goals" className="space-y-8">
+              <TabsList className="grid w-full grid-cols-3 p-1.5 bg-muted/50 rounded-2xl h-auto border border-border/50 shadow-sm">
+                <TabsTrigger value="goals" className="gap-2 py-3 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary transition-all font-semibold">
                   <Target className="h-4 w-4" />
                   My Goals
                 </TabsTrigger>
-                <TabsTrigger value="videos" className="gap-2">
+                <TabsTrigger value="videos" className="gap-2 py-3 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary transition-all font-semibold">
                   <Play className="h-4 w-4" />
                   Learn
                 </TabsTrigger>
-                <TabsTrigger value="actions" className="gap-2">
+                <TabsTrigger value="actions" className="gap-2 py-3 rounded-xl data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary transition-all font-semibold">
                   <CheckCircle className="h-4 w-4" />
                   Actions
                 </TabsTrigger>
-
               </TabsList>
 
               {/* Goals Tab */}
@@ -814,44 +880,78 @@ const CitizenDashboard = () => {
                   </Dialog>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  {impactGoals.length > 0 ? (
-                    impactGoals.map((ut) => {
-                      const Icon = getIconForCategory(ut.tasks.category);
-                      return (
-                        <Card key={ut.id} className="hover:shadow-lg transition-shadow">
-                          <CardHeader className="pb-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <Icon className="h-5 w-5 text-primary" />
+                <AnimatePresence mode="popLayout">
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {impactGoals.length > 0 ? (
+                      impactGoals.map((ut, idx) => {
+                        const Icon = getIconForCategory(ut.tasks?.category);
+                        return (
+                          <motion.div
+                            key={ut.id}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: idx * 0.05 }}
+                            layout
+                          >
+                            <Card className="bg-glass border-none shadow-lg hover:shadow-2xl transition-all duration-300 group overflow-hidden h-full flex flex-col">
+                              <div className="h-1 bg-gradient-to-r from-primary to-secondary opacity-50 group-hover:opacity-100 transition-opacity" />
+                              <CardHeader className="pb-2">
+                                <div className="flex items-start justify-between">
+                                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                                    {Icon && <Icon className="h-5 w-5" />}
+                                  </div>
+                                  <Badge variant={ut.status === 'submitted' ? "secondary" : "default"} className="font-bold uppercase tracking-tighter scale-90 origin-right">
+                                    {ut.status}
+                                  </Badge>
                                 </div>
-                                <CardTitle className="text-base">
-                                  {ut.task_id === 'custom-goal' ? (ut.submission_text || "Custom Goal") : (ut.tasks?.title || "Goal")}
+                                <CardTitle className="mt-4 text-lg font-bold group-hover:text-primary transition-colors">
+                                  {ut.tasks?.title || "Custom Goal"}
                                 </CardTitle>
+                              </CardHeader>
+                              <CardContent className="flex-1 pb-4">
+                                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                                  {ut.tasks?.description || ut.submission_text || "Taking green action!"}
+                                </p>
+                                <div className="flex items-center gap-2 mt-auto pt-2">
+                                  <div className="px-2 py-0.5 rounded-md bg-secondary/10 text-secondary text-[10px] font-black tracking-widest uppercase">
+                                    +{ut.tasks?.points || 0} PTS
+                                  </div>
+                                </div>
+                              </CardContent>
+                              <div className="p-4 pt-0">
+                                {ut.status === 'pending' && (
+                                  <Button
+                                    className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl shadow-md shadow-primary/10 font-bold group/btn"
+                                    onClick={() => {
+                                      setActiveUserTaskId(ut.id);
+                                      setIsSubmitActionOpen(true);
+                                    }}
+                                  >
+                                    Submit Action <ChevronRight className="h-4 w-4 ml-1 group-hover/btn:translate-x-1 transition-transform" />
+                                  </Button>
+                                )}
+                                {ut.status === 'submitted' && (
+                                  <Button disabled className="w-full rounded-xl bg-muted text-muted-foreground font-bold italic">
+                                    Pending Verification
+                                  </Button>
+                                )}
                               </div>
-                              <Badge variant={ut.status === 'submitted' ? 'secondary' : 'outline'}>
-                                {ut.status === 'submitted' ? 'Verifying' : (ut.tasks?.points ? `${ut.tasks.points} pts` : 'Score Pending')}
-                              </Badge>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {ut.task_id === 'custom-goal' ? "A unique action proposed by you." : (ut.tasks?.description || "")}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Status: {ut.status.charAt(0).toUpperCase() + ut.status.slice(1)}</span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })
-                  ) : (
-                    <div className="col-span-2 text-center py-12 border-2 border-dashed rounded-xl text-muted-foreground">
-                      No active goals. Click "Add Goal" to get started!
-                    </div>
-                  )}
-                </div>
+                            </Card>
+                          </motion.div>
+                        );
+                      })
+                    ) : (
+                      <div className="col-span-2 text-center py-12 px-4 rounded-3xl bg-muted/20 border-2 border-dashed border-muted-foreground/20">
+                        <Target className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                        <h4 className="text-lg font-bold text-muted-foreground">No active goals</h4>
+                        <p className="text-sm text-muted-foreground mb-6">Start your journey towards a cleaner Delhi today!</p>
+                        <Button variant="civic-outline" onClick={() => setIsAddGoalOpen(true)} className="rounded-xl">
+                          Browse Available Goals
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </AnimatePresence>
               </TabsContent>
 
               {/* Videos Tab */}
@@ -1433,7 +1533,7 @@ const CitizenDashboard = () => {
         {/* Bottom Spacer/Padding */}
         <div className="h-20" />
       </div>
-    </Layout >
+    </Layout>
   );
 };
 

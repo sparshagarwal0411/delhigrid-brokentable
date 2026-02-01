@@ -13,8 +13,8 @@ import {
   MapPin,
   Users,
   AlertTriangle,
-  TrendingUp,
-  TrendingDown,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
   Download,
   Filter,
   Building2,
@@ -30,8 +30,13 @@ import {
   Target,
   MessageSquare,
   Clock,
-  ClipboardList
+  ClipboardList,
+  BarChart,
+  PieChart as PieChartIcon,
+  ChevronRight,
+  Search
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -78,7 +83,7 @@ interface Complaint {
   }
 }
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 
 // Generate chart data
 const zoneData = [
@@ -487,130 +492,120 @@ const AuthorityDashboard = () => {
 
   return (
     <Layout>
-      <div className="container py-8">
+      <div className="container py-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row gap-4 items-start justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="default" className="gap-1">
-                <Building2 className="h-3 w-3" />
-                Authority Portal
-              </Badge>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden p-8 rounded-[2rem] bg-glass premium-gradient mb-10 group shadow-2xl transition-all duration-500 hover:shadow-primary/5"
+        >
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px] group-hover:bg-primary/20 transition-all duration-1000" />
+          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-secondary/10 rounded-full blur-[100px] group-hover:bg-secondary/20 transition-all duration-1000" />
+
+          <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center justify-between">
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
+                <div className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-black tracking-widest uppercase border border-primary/20 shadow-sm">
+                  Authority Management System
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success text-[10px] font-bold border border-success/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
+                  SYSTEM SECURE
+                </div>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-black font-heading mb-3 tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300">
+                City Analytics Portal
+              </h1>
+              <p className="text-muted-foreground text-lg font-medium max-w-xl line-clamp-2">
+                Real-time monitoring and administrative control for Delhi's environmental transformation initiatives.
+              </p>
             </div>
-            <h1 className="text-3xl font-heading font-bold mb-2">Analytics Dashboard</h1>
-            <p className="text-muted-foreground">
-              City-wide pollution monitoring and ward-level analytics
-            </p>
+
+            <div className="flex flex-row md:flex-col gap-3 shrink-0">
+              <Button variant="outline" className="h-12 px-6 rounded-2xl bg-white/50 backdrop-blur-sm border-border/50 hover:bg-white hover:shadow-lg transition-all font-bold gap-2">
+                <Download className="h-4 w-4" />
+                Export Data
+              </Button>
+              <Button className="h-12 px-6 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 shadow-xl transition-all font-bold gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Live Sync
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export Report
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
-          </div>
-        </div>
+        </motion.div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
           <StatCard
-            title="City Average Score"
+            title="City Health Score"
             value={avgScore}
-            description="Across all 250 wards"
-            icon={BarChart3}
-            variant="primary"
+            description="Avg. across 250 wards"
+            icon={BarChart}
+            variant="glass"
             trend={{ value: 2.3, isPositive: false }}
-          />
-          <StatCard
-            title="Critical Wards"
-            value={criticalWards}
-            description="Score below 40"
-            icon={AlertTriangle}
-            variant="destructive"
-          />
-          <StatCard
-            title="Improved Wards"
-            value={improvedWards}
-            description="30-day improvement"
-            icon={TrendingUp}
-            variant="success"
-          />
-          <StatCard
-            title="Total Actions Taken"
-            value={totalActionsCount}
-            description="All active citizen goals"
-            icon={Target}
-            variant="primary"
           />
           <StatCard
             title="Active Citizens"
             value={activeUsersCount}
             description="Registered participants"
             icon={Users}
+            variant="glass"
+          />
+          <StatCard
+            title="Completed Actions"
+            value={totalActionsCount}
+            description="All verified goals"
+            icon={Target}
+            variant="glass"
+          />
+          <StatCard
+            title="Immediate Alerts"
+            value={criticalWards}
+            description="Critical severity areas"
+            icon={AlertTriangle}
+            variant="destructive"
+          />
+          <StatCard
+            title="Trend Report"
+            value={`${improvedWards}%`}
+            description="30-day improvements"
+            icon={TrendingUpIcon}
             variant="success"
           />
         </div>
 
         {/* Main Dashboard */}
-        <Tabs defaultValue="overview" className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="zones">Zone Analysis</TabsTrigger>
-              <TabsTrigger value="trends">Trends</TabsTrigger>
-              <TabsTrigger value="alerts">Alerts</TabsTrigger>
-              <TabsTrigger value="verification" className="gap-2">
+        <Tabs defaultValue="overview" className="space-y-10">
+          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+            <TabsList className="p-1.5 bg-muted/40 rounded-2xl h-auto border border-border/50 shadow-inner flex-wrap overflow-x-auto">
+              <TabsTrigger value="overview" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg font-bold transition-all">Overview</TabsTrigger>
+              <TabsTrigger value="zones" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg font-bold transition-all">Zones</TabsTrigger>
+              <TabsTrigger value="trends" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg font-bold transition-all">Analytics</TabsTrigger>
+              <TabsTrigger value="alerts" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg font-bold transition-all">Live Alerts</TabsTrigger>
+              <TabsTrigger value="verification" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg font-bold transition-all gap-2">
                 Approval Queue
                 {pendingSubmissions.filter(s => s.status === 'submitted').length > 0 && (
-                  <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] ml-2">
+                  <span className="px-2 py-0.5 rounded-full bg-destructive text-white text-[10px] font-black">
                     {pendingSubmissions.filter(s => s.status === 'submitted').length}
-                  </Badge>
+                  </span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="participation">
-                Citizen Tracking
-                {pendingSubmissions.filter(s => s.status === 'pending').length > 0 && (
-                  <Badge variant="secondary" className="h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] ml-2">
-                    {pendingSubmissions.filter(s => s.status === 'pending').length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="complaints" className="gap-2">
-                <ClipboardList className="h-4 w-4" />
+              <TabsTrigger value="complaints" className="px-6 py-2.5 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg font-bold transition-all gap-2">
                 Complaints
                 {complaints.filter(c => c.status === 'received').length > 0 && (
-                  <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] ml-2">
+                  <span className="px-2 py-0.5 rounded-full bg-destructive text-white text-[10px] font-black">
                     {complaints.filter(c => c.status === 'received').length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="admin-requests" className="gap-2 text-primary font-bold">
-                <ShieldCheck className="h-4 w-4" />
-                Access Requests
-                {pendingAdmins.length > 0 && (
-                  <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px] ml-2 animate-pulse">
-                    {pendingAdmins.length}
-                  </Badge>
+                  </span>
                 )}
               </TabsTrigger>
             </TabsList>
 
-
-            <div className="flex gap-2">
-              <Select defaultValue="30">
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Time Period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Last 7 days</SelectItem>
-                  <SelectItem value="30">Last 30 days</SelectItem>
-                  <SelectItem value="90">Last 90 days</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="icon">
+            <div className="flex items-center gap-3 w-full lg:w-auto">
+              <div className="relative flex-1 lg:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search Wards..." className="pl-10 h-11 rounded-xl bg-muted/40 border-border/50 focus:bg-white transition-all shadow-sm" />
+              </div>
+              <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl bg-muted/40 border-border/50">
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
@@ -618,78 +613,130 @@ const AuthorityDashboard = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid lg:grid-cols-3 gap-6">
-              {/* Zone Performance Chart */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>Zone Performance</CardTitle>
-                  <CardDescription>Average pollution score by zone</CardDescription>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="lg:col-span-2"
+            >
+              <Card className="bg-glass border-none shadow-xl overflow-hidden h-full">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl font-bold">Zone Performance Matrix</CardTitle>
+                      <CardDescription>Average city hygiene score by administrative zone</CardDescription>
+                    </div>
+                    <div className="p-2 rounded-lg bg-primary/5">
+                      <TrendingUpIcon className="h-5 w-5 text-primary" />
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={zoneData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis
-                        dataKey="zone"
-                        tick={{ fontSize: 11 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                        className="text-muted-foreground"
-                      />
-                      <YAxis className="text-muted-foreground" />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar dataKey="score" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="h-[350px] mt-4 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={zoneData}>
+                        <defs>
+                          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+                        <XAxis
+                          dataKey="zone"
+                          tick={{ fontSize: 10, fontWeight: 700 }}
+                          axisLine={false}
+                          tickLine={false}
+                          className="text-muted-foreground"
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 10, fontWeight: 700 }}
+                          className="text-muted-foreground"
+                        />
+                        <Tooltip
+                          cursor={{ fill: 'hsl(var(--primary) / 0.05)', radius: 8 }}
+                          contentStyle={{
+                            background: 'hsla(var(--glass-background))',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid hsla(var(--glass-border))',
+                            borderRadius: '16px',
+                            boxShadow: 'var(--shadow-xl)',
+                            fontWeight: 'bold'
+                          }}
+                        />
+                        <Bar
+                          dataKey="score"
+                          fill="url(#barGradient)"
+                          radius={[8, 8, 4, 4]}
+                          barSize={32}
+                          animationBegin={300}
+                          animationDuration={1500}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
+            </motion.div>
 
-              {/* Distribution Pie Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Ward Distribution</CardTitle>
-                  <CardDescription>By pollution severity</CardDescription>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="bg-glass border-none shadow-xl h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl font-bold">Severity Analysis</CardTitle>
+                  <CardDescription>Ward distribution by pollution level</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={pollutionBreakdown}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={80}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {pollutionBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex flex-wrap justify-center gap-3 mt-4">
+                  <div className="h-[280px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pollutionBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={70}
+                          outerRadius={100}
+                          paddingAngle={8}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {pollutionBreakdown.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            background: 'hsla(var(--glass-background))',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid hsla(var(--glass-border))',
+                            borderRadius: '16px',
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-4">
                     {pollutionBreakdown.map((item) => (
-                      <div key={item.name} className="flex items-center gap-1 text-xs">
+                      <div key={item.name} className="flex items-center gap-2 p-2 rounded-xl bg-muted/30 transition-hover border border-transparent hover:border-border/50">
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className="w-2.5 h-2.5 rounded-full shadow-sm"
                           style={{ backgroundColor: item.color }}
                         />
-                        <span>{item.name}: {item.value}</span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">{item.name}</span>
+                          <span className="font-extrabold text-sm">{item.value} Wards</span>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            </motion.div>
 
             {/* Top/Bottom Wards */}
             <div className="grid md:grid-cols-2 gap-6">

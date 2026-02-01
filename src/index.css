@@ -62,14 +62,12 @@
     --shadow-lg: 0 10px 15px -3px hsl(215 25% 15% / 0.08), 0 4px 6px -4px hsl(215 25% 15% / 0.05);
     --shadow-xl: 0 20px 25px -5px hsl(215 25% 15% / 0.1), 0 8px 10px -6px hsl(215 25% 15% / 0.05);
 
-    --sidebar-background: 210 20% 98%;
-    --sidebar-foreground: 215 25% 15%;
-    --sidebar-primary: 210 70% 35%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 93%;
-    --sidebar-accent-foreground: 215 25% 15%;
-    --sidebar-border: 210 20% 88%;
     --sidebar-ring: 210 70% 35%;
+
+    /* Glassmorphism */
+    --glass-background: 0 0% 100% / 0.7;
+    --glass-border: 210 20% 88% / 0.5;
+    --glass-shadow: 215 25% 15% / 0.05;
   }
 
   .dark {
@@ -112,14 +110,13 @@
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
 
-    --sidebar-background: 215 28% 12%;
-    --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 200 75% 55%;
-    --sidebar-primary-foreground: 215 30% 10%;
-    --sidebar-accent: 215 25% 20%;
-    --sidebar-accent-foreground: 210 20% 95%;
     --sidebar-border: 215 25% 22%;
     --sidebar-ring: 200 75% 55%;
+
+    /* Glassmorphism Dark */
+    --glass-background: 215 28% 14% / 0.7;
+    --glass-border: 215 25% 22% / 0.5;
+    --glass-shadow: 0 0% 0% / 0.3;
   }
 }
 
@@ -228,12 +225,27 @@
     perspective: 1000px;
   }
 
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-
   .backface-hidden {
     backface-visibility: hidden;
+  }
+
+  .bg-glass {
+    background-color: hsla(var(--glass-background));
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid hsla(var(--glass-border));
+    box-shadow: 0 8px 32px 0 hsla(var(--glass-shadow));
+  }
+
+  .premium-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
+  }
+
+  .hover-elevate {
+    @apply transition-all duration-300;
+  }
+  .hover-elevate:hover {
+    @apply -translate-y-1 shadow-lg;
   }
 }
 
