@@ -639,7 +639,7 @@ const AuthorityDashboard = () => {
                 <CardContent>
                   <div className="h-[350px] mt-4 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={zoneData}>
+                      <RechartsBarChart data={zoneData}>
                         <defs>
                           <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
@@ -679,7 +679,7 @@ const AuthorityDashboard = () => {
                           animationBegin={300}
                           animationDuration={1500}
                         />
-                      </BarChart>
+                      </RechartsBarChart>
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
@@ -778,7 +778,7 @@ const AuthorityDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingDown className="h-5 w-5 text-destructive" />
+                    <TrendingDownIcon className="h-5 w-5 text-destructive" />
                     Wards Needing Attention
                   </CardTitle>
                 </CardHeader>
@@ -833,7 +833,7 @@ const AuthorityDashboard = () => {
                         <div className={`flex items-center gap-1 text-sm ${zone.trend < 0 ? 'text-success' : 'text-destructive'
                           }`}>
                           {zone.trend < 0 ? (
-                            <TrendingDown className="h-4 w-4" />
+                            <TrendingDownIcon className="h-4 w-4" />
                           ) : (
                             <TrendingUpIcon className="h-4 w-4" />
                           )}
