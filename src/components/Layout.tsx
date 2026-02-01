@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ChevronRight,
+  ChevronLeft, // Changed from ChevronRight to ChevronLeft for right-side handle
   ClipboardList,
   X,
   MapPin,
@@ -79,23 +79,31 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
     <div className="flex min-h-screen flex-col">
       <Navbar />
 
-      {/* Main Layout Container (Below Fixed Navbar) 
-        Uses 'items-start' to ensure sidebar stays at top while content scrolls
-      */}
-      <div className="pt-16 flex flex-1 items-start flex-row-reverse">
+      {/* Main Layout Container */}
+      <div className="pt-16 flex flex-1 items-start">
+
+        {/* --- Main Content Area --- */}
+        {/* Moved BEFORE Sidebar so it stays on the left. 
+            When Sidebar (flex item #2) opens, this will naturally shrink/shift left. */}
+        <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
+          <main className="flex-1">
+            {children}
+          </main>
+          {showFooter && <Footer />}
+        </div>
 
         {/* --- Sidebar Handle (Visible only when closed) --- */}
         <AnimatePresence>
           {!sidebarOpen && (
             <motion.div
-              initial={{ x: 20, opacity: 0 }}
+              initial={{ x: 20, opacity: 0 }} // Slide in from Right (+20)
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 20, opacity: 0 }}
-              className="fixed right-0 top-32 z-40 hidden md:block"
+              className="fixed right-0 top-32 z-40 hidden md:block" // Position Right
             >
               <Button
                 onClick={() => setSidebarOpen(true)}
-                className="h-16 w-6 rounded-r-none rounded-l-xl border border-r-0 shadow-md p-0 flex items-center justify-center hover:w-10 transition-all group 
+                className="h-16 w-6 rounded-l-xl rounded-r-none border border-r-0 shadow-md p-0 flex items-center justify-center hover:w-10 transition-all group 
                 
                 /* LIGHT MODE: Dark Greyish Blue background, White text */
                 bg-slate-700 text-white hover:bg-slate-800
@@ -103,35 +111,32 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
                 /* DARK MODE: White background, Dark Slate text */
                 dark:bg-white dark:text-slate-900 dark:hover:bg-gray-200"
               >
-                <ChevronRight className="h-4 w-4 transition-colors rotate-180" />
+                {/* ChevronLeft points 'inwards' when on the right side */}
+                <ChevronLeft className="h-4 w-4 transition-colors" />
               </Button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* --- Sidebar (Shift Mode) --- */}
-        {/* - sticky top-16: Keeps it pinned under the navbar while page scrolls
-           - h-[calc(100vh-4rem)]: Fills the exact height of viewport minus navbar
-           - width animate: Smoothly resizes to push content
-        */}
+        {/* --- Sidebar (Right Side) --- */}
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: sidebarOpen ? 400 : 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="shrink-0 h-[calc(100vh-4rem)] sticky top-16 bg-background border-l overflow-hidden z-30"
+          className="shrink-0 h-[calc(100vh-4rem)] sticky top-16 bg-background border-l overflow-hidden z-30" // Changed border-r to border-l
         >
-          {/* Inner container with fixed width prevents content squishing during animation */}
+          {/* Inner container */}
           <div className="w-[400px] h-full flex flex-col">
             <div className="p-4 border-b flex items-center justify-between bg-muted/30">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <ClipboardList className="h-4 w-4 text-primary" />
-                </div>
-                <h2 className="font-semibold text-lg">Complaints Tracker</h2>
-              </div>
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold text-lg">Complaints Tracker</h2>
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <ClipboardList className="h-4 w-4 text-primary" />
+                </div>
+              </div>
             </div>
 
             <div className="flex-1 overflow-hidden flex flex-col">
@@ -223,18 +228,10 @@ export function Layout({ children, showFooter = true }: LayoutProps) {
           </div>
         </motion.div>
 
-        {/* --- Main Content Area --- */}
-        {/* flex-1 allows it to fill remaining width. min-w-0 prevents flexbox overflow issues */}
-        <div className="flex-1 flex flex-col min-w-0 transition-all duration-300">
-          <main className="flex-1">
-            {children}
-          </main>
-          {showFooter && <Footer />}
-        </div>
-
       </div>
 
-      <FloatingActionButtons />
+      {/* Hide Floating Action Buttons when Sidebar is Open */}
+      {!sidebarOpen && <FloatingActionButtons />}
     </div>
   );
 }

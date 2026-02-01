@@ -1,19 +1,21 @@
 import { Ward } from "@/types";
 
 // Generate 250 wards data for Delhi
-const zones = [
-  "North Delhi",
-  "South Delhi",
-  "East Delhi",
-  "West Delhi",
-  "Central Delhi",
-  "New Delhi",
-  "North West Delhi",
-  "South West Delhi",
-  "North East Delhi",
-  "Shahdara",
-  "South East Delhi"
-];
+const zoneCenters: Record<string, { lat: number, lng: number }> = {
+  "North Delhi": { lat: 28.7041, lng: 77.1025 },
+  "South Delhi": { lat: 28.5000, lng: 77.1850 },
+  "East Delhi": { lat: 28.6314, lng: 77.2921 },
+  "West Delhi": { lat: 28.6600, lng: 77.0800 },
+  "Central Delhi": { lat: 28.6448, lng: 77.2167 },
+  "New Delhi": { lat: 28.6139, lng: 77.2090 },
+  "North West Delhi": { lat: 28.7500, lng: 77.0500 },
+  "South West Delhi": { lat: 28.5500, lng: 77.0000 },
+  "North East Delhi": { lat: 28.7000, lng: 77.2500 },
+  "Shahdara": { lat: 28.6700, lng: 77.3000 },
+  "South East Delhi": { lat: 28.5500, lng: 77.2500 }
+};
+
+const zones = Object.keys(zoneCenters);
 
 const wardNames = [
   "Narela", "Bakhtawarpur", "Alipur", "Model Town", "Sadar Bazar",
@@ -51,6 +53,8 @@ export const generateWards = (): Ward[] => {
   for (let i = 1; i <= 250; i++) {
     const baseNameIndex = (i - 1) % wardNames.length;
     const zoneIndex = Math.floor((i - 1) / 23) % zones.length;
+    const zone = zones[zoneIndex];
+    const center = zoneCenters[zone];
 
     // Generate realistic Delhi AQI (Winter levels are typically 200-500)
     // Base AQI around 300 with variation
@@ -70,22 +74,22 @@ export const generateWards = (): Ward[] => {
     wards.push({
       id: i,
       name: `${wardNames[baseNameIndex]} Ward ${Math.ceil(i / wardNames.length)}`,
-      zone: zones[zoneIndex],
+      zone: zone,
       population: Math.floor(Math.random() * 80000) + 20000,
       area: parseFloat((Math.random() * 8 + 2).toFixed(2)),
-      pollutionScore, // 0-100 score (higher is better)
-      aqi: aqi, // Actual AQI value (higher is worse)
-      airQuality: Math.floor(Math.random() * 100) + 1, // Component score
-      waterQuality: Math.floor(Math.random() * 100) + 1, // Component score
-      wasteManagement: Math.floor(Math.random() * 100) + 1, // Component score
-      noiseLevel: Math.floor(Math.random() * 100) + 1, // Component score
+      pollutionScore,
+      aqi: aqi,
+      airQuality: Math.floor(Math.random() * 100) + 1,
+      waterQuality: Math.floor(Math.random() * 100) + 1,
+      wasteManagement: Math.floor(Math.random() * 100) + 1,
+      noiseLevel: Math.floor(Math.random() * 100) + 1,
       trend7Days: parseFloat((Math.random() * 20 - 10).toFixed(1)),
       trend30Days: parseFloat((Math.random() * 30 - 15).toFixed(1)),
       sources: selectedSources,
       trafficStatus: Math.random() > 0.7 ? 'heavy' : Math.random() > 0.4 ? 'moderate' : 'low',
       coordinates: {
-        lat: 28.5 + Math.random() * 0.4,
-        lng: 76.9 + Math.random() * 0.5
+        lat: center.lat + (Math.random() * 0.1 - 0.05),
+        lng: center.lng + (Math.random() * 0.1 - 0.05)
       }
     });
   }

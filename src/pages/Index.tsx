@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { PollutionCarousel } from "@/components/PollutionCarousel";
 
-// --- Interactive Grid Component (Lines Version) ---
+// --- Interactive Grid Component ---
 const InteractiveGrid = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -67,29 +67,33 @@ const InteractiveGrid = () => {
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      const gap = 40; 
-      const influenceRadius = 250; 
+
+      const gap = 40;
+      const influenceRadius = 250;
 
       ctx.lineWidth = 1;
 
-      // Determine grid color based on theme (naive check, or just use a neutral that works for both)
-      // For simplicity here, we use a color that works on both or slightly adjust alpha
+      // Theme-aware Grid Colors
       const isDark = document.documentElement.classList.contains('dark');
-      const baseStroke = isDark ? '255, 255, 255' : '0, 0, 0'; // White lines on dark, Black on light
+
+      // FIXED: Use Darker Slate-500 ('100, 116, 139') in Light Mode for visibility
+      const baseStroke = isDark ? '255, 255, 255' : '100, 116, 139';
 
       for (let x = 0; x <= canvas.width; x += gap) {
         for (let y = 0; y <= canvas.height; y += gap) {
-          
+
           if (x + gap <= canvas.width) {
             const centerX = x + gap / 2;
             const centerY = y;
             const dist = Math.sqrt((centerX - mouseX) ** 2 + (centerY - mouseY) ** 2);
-            
-            let alpha = 0.05;
+
+            // FIXED: Lower base opacity, but much higher hover boost for light mode
+            let alpha = isDark ? 0.05 : 0.15;
             if (dist < influenceRadius) {
               const factor = (influenceRadius - dist) / influenceRadius;
-              alpha = 0.05 + factor * 0.4;
+              // Stronger boost (0.7) for light mode so lines pop
+              const boost = isDark ? 0.4 : 0.7;
+              alpha = alpha + factor * boost;
             }
 
             ctx.beginPath();
@@ -103,11 +107,12 @@ const InteractiveGrid = () => {
             const centerX = x;
             const centerY = y + gap / 2;
             const dist = Math.sqrt((centerX - mouseX) ** 2 + (centerY - mouseY) ** 2);
-            
-            let alpha = 0.05;
+
+            let alpha = isDark ? 0.05 : 0.15;
             if (dist < influenceRadius) {
               const factor = (influenceRadius - dist) / influenceRadius;
-              alpha = 0.05 + factor * 0.4;
+              const boost = isDark ? 0.4 : 0.7;
+              alpha = alpha + factor * boost;
             }
 
             ctx.beginPath();
@@ -118,7 +123,7 @@ const InteractiveGrid = () => {
           }
         }
       }
-      
+
       animationFrameId = requestAnimationFrame(draw);
     };
 
@@ -134,6 +139,12 @@ const InteractiveGrid = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full pointer-events-none" />;
 };
 
+const TYPEWRITER_MESSAGES = [
+  "Real-time pollution data for every Delhi ward.",
+  "AI-driven insights for a cleaner, greener capital.",
+  "Empowering citizens to take collective action today."
+];
+
 const Index = () => {
   const [logoError, setLogoError] = useState(false);
 
@@ -143,19 +154,13 @@ const Index = () => {
   const [loopNum, setLoopNum] = useState(0);
   const [typingSpeed, setTypingSpeed] = useState(150);
 
-  const messages = [
-    "Real-time pollution data for every Delhi ward.",
-    "AI-driven insights for a cleaner, greener capital.",
-    "Empowering citizens to take collective action today."
-  ];
-
   useEffect(() => {
     const handleTyping = () => {
-      const i = loopNum % messages.length;
-      const fullText = messages[i];
+      const i = loopNum % TYPEWRITER_MESSAGES.length;
+      const fullText = TYPEWRITER_MESSAGES[i];
 
-      setText(isDeleting 
-        ? fullText.substring(0, text.length - 1) 
+      setText(isDeleting
+        ? fullText.substring(0, text.length - 1)
         : fullText.substring(0, text.length + 1)
       );
 
@@ -171,29 +176,23 @@ const Index = () => {
 
     const timer = setTimeout(handleTyping, typingSpeed);
     return () => clearTimeout(timer);
-  }, [text, isDeleting, loopNum, messages, typingSpeed]);
+  }, [text, isDeleting, loopNum, typingSpeed]);
 
   return (
     <Layout>
       {/* Hero Section */}
-      {/* UPDATED BACKGROUND:
-          - Light Mode: bg-slate-50 (Simple Light Gray)
-          - Dark Mode: bg-slate-950 (Simple Dark Blue-Gray)
-          - Removed 'gradient-hero'
-      */}
       <section className="relative overflow-hidden bg-slate-50 dark:bg-slate-950 py-20 md:py-32 min-h-[80vh] flex flex-col justify-center transition-colors duration-300">
-        
-        {/* Background Pattern - subtle overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5NDk0OTQiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiM5NDk0OTQiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
 
         {/* INTERACTIVE GRID */}
         <InteractiveGrid />
 
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            
+
             {/* --- HEADER --- */}
-            {/* Updated Text Color: Dark in light mode, White in dark mode */}
             <div className="inline-block mb-2">
               <span className="text-sm md:text-base font-medium tracking-[0.2em] uppercase text-slate-600 dark:text-white/90 drop-shadow-sm">
                 Government of NCT of Delhi Initiative
@@ -202,24 +201,23 @@ const Index = () => {
 
             {/* --- HERO TITLE & LOGOS --- */}
             <div className="flex flex-col items-center justify-center">
-              
+
               {/* Main Title Row with App Logo Beside */}
               <div className="flex items-center justify-center gap-6 mb-0">
-                <div className="relative z-50 p-2 bg-white/10 backdrop-blur-sm rounded-2xl shadow-lg border border-black/5 dark:border-white/20">
+                <div className="relative z-50 p-2 bg-white dark:bg-slate/10 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200 dark:border-white/0">
                   {!logoError ? (
-                    <img 
-                      src="/logo.png" 
-                      alt="DelhiGrid Logo" 
+                    <img
+                      src="/logo.png"
+                      alt="DelhiGrid Logo"
                       className="h-20 w-20 md:h-28 md:w-28 object-contain drop-shadow-2xl"
                       onError={() => setLogoError(true)}
                     />
                   ) : (
-                    <Shield className="h-20 w-20 md:h-28 md:w-28 text-slate-700 dark:text-white p-2" />
+                    <Shield className="h-20 w-20 md:h-28 md:w-28 text-slate-900 dark:text-white p-2" />
                   )}
                 </div>
-                
-                {/* TITLE COLOR: Emerald Green (Works on both backgrounds) */}
-                <h1 className="text-5xl md:text-6xl lg:text-8xl font-heading font-bold text-emerald-600 dark:text-emerald-400 leading-tight drop-shadow-lg pb-2">
+
+                <h1 className="text-5xl md:text-6xl lg:text-8xl font-heading font-bold text-slate-900 dark:text-white leading-tight drop-shadow-lg pb-2">
                   DelhiGrid
                 </h1>
               </div>
@@ -229,24 +227,23 @@ const Index = () => {
                 <span className="text-xl md:text-2xl font-light text-slate-600 dark:text-white/80 italic font-serif pb-1">
                   by
                 </span>
-                
-                <img 
-                  src="/logo_light.png" 
-                  alt="broken_table" 
-                  className="h-20 md:h-32 w-auto dark:hidden object-contain" 
+
+                <img
+                  src="/logo_light.png"
+                  alt="broken_table"
+                  className="h-20 md:h-32 w-auto dark:hidden object-contain"
                 />
-                
-                <img 
-                  src="/logo_dark.png" 
-                  alt="broken_table" 
-                  className="h-20 md:h-32 w-auto hidden dark:block object-contain" 
+
+                <img
+                  src="/logo_dark.png"
+                  alt="broken_table"
+                  className="h-20 md:h-32 w-auto hidden dark:block object-contain"
                 />
               </div>
             </div>
             {/* ----------------------------- */}
 
             {/* --- THIN TYPEWRITER EFFECT --- */}
-            {/* Updated Text Color: Dark Gray in Light Mode, White in Dark Mode */}
             <div className="min-h-[40px] flex items-center justify-center -mt-2">
               <p className="text-lg md:text-2xl text-slate-700 dark:text-white font-light tracking-wide drop-shadow-sm leading-relaxed">
                 {text}
@@ -254,7 +251,6 @@ const Index = () => {
               </p>
             </div>
 
-            {/* REDUCED GAP: pt-2 */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
               <WardSearch placeholder="Search your ward by name or number..." />
             </div>
@@ -276,16 +272,16 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Wave decoration (Updated to match background colors) */}
+        {/* Wave decoration */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 50L60 45.7C120 41.3 240 32.7 360 32.3C480 32 600 40 720 48.3C840 56.7 960 65.3 1080 65C1200 64.7 1320 55.3 1380 50.7L1440 46V101H1380C1320 101 1200 101 1080 101C960 101 840 101 720 101C600 101 480 101 360 101C240 101 120 101 60 101H0V50Z" className="fill-background" />
+            <path d="M0 50L60 45.7C120 41.3 240 32.7 360 32.3C480 32 600 40 720 48.3C840 56.7 960 65.3 1080 65C1200 64.7 1320 55.3 1380 50.7L1440 46V101H1380C1320 101 1200 101 1080 101C960 101 840 101 720 101C600 101 480 101 360 101C240 101 120 101 60 101H0V50Z" className="fill-slate-50 dark:fill-slate-950" />
           </svg>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-slate-50 dark:bg-slate-950">
         <div className="container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             <StatCard
@@ -321,7 +317,7 @@ const Index = () => {
       </section>
 
       {/* Pollution Categories */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-16 bg-slate-100 dark:bg-slate-900 transition-colors duration-300">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-heading font-bold mb-4">
@@ -339,7 +335,7 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-slate-50 dark:bg-slate-950">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-heading font-bold mb-4">
@@ -385,7 +381,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-16 bg-slate-100 dark:bg-slate-900 transition-colors duration-300">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-heading font-bold mb-4">
@@ -409,7 +405,6 @@ const Index = () => {
               </CardHeader>
               <CardContent className="mt-auto w-full pb-6">
                 <Link to="/contribute">
-                  {/* Updated: Outline style to match others */}
                   <Button variant="civic-outline" className="w-full">Donate Now</Button>
                 </Link>
               </CardContent>
@@ -470,7 +465,7 @@ const Index = () => {
       </section>
 
       {/* Features for Different Users */}
-      <section className="py-16 bg-background">
+      <section className="py-16 bg-slate-50 dark:bg-slate-950">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-8">
             <Card variant="elevated" className="p-8">
@@ -551,7 +546,7 @@ const Index = () => {
       </section>
 
       {/* About Us Section */}
-      <section id="about" className="py-16 bg-muted/30 scroll-mt-16">
+      <section id="about" className="py-16 bg-slate-100 dark:bg-slate-900 transition-colors duration-300 scroll-mt-16">
         <div className="container">
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">
@@ -611,7 +606,7 @@ const Index = () => {
               <p className="text-xs text-muted-foreground italic border-t pt-2 mt-2">
                 *Geospatial data aligned with the 2022 Zone & Ward Map provided by <strong>Geospatial Delhi Limited (GSDL)</strong>, A Government of NCT of Delhi Company.
               </p>
-              
+
               <div className="grid md:grid-cols-3 gap-4 mt-6">
                 <div className="text-center p-4 bg-background rounded-lg">
                   <div className="text-2xl font-bold text-primary mb-1">250</div>
@@ -632,7 +627,7 @@ const Index = () => {
       </section>
 
       {/* FAQs Section */}
-      <section id="faqs" className="py-16 bg-background scroll-mt-16">
+      <section id="faqs" className="py-16 bg-slate-50 dark:bg-slate-950">
         <div className="container">
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">
@@ -750,8 +745,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Pricing/Billing Section */}
-      <section id="pricing" className="py-16 bg-muted/30 scroll-mt-16">
+      {/* Pricing/Billing Section - MATCHED HERO BACKGROUND (DARKER) */}
+      <section id="pricing" className="py-16 bg-slate-100 dark:bg-slate-900 transition-colors duration-300 scroll-mt-16">
         <div className="container">
           <div className="text-center mb-12">
             <Badge variant="secondary" className="mb-4">
@@ -860,7 +855,7 @@ const Index = () => {
               <div className="p-6 pt-0 mt-auto">
                 <Link to="/payment">
                   {/* Hollow Yellow Style */}
-                  <Button 
+                  <Button
                     variant="outline"
                     className="w-full border-yellow-500 text-yellow-600 hover:bg-yellow-500 hover:text-white shadow-sm transition-colors"
                   >
@@ -918,72 +913,6 @@ const Index = () => {
               </div>
             </Card>
           </div>
-
-          {/* Revenue Model Explanation */}
-          <Card variant="civic" className="max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                How We Sustain DelhiGrid
-              </CardTitle>
-              <CardDescription>Transparent funding model for a government initiative</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                DelhiGrid is a government initiative, but we operate on a sustainable model to ensure
-                long-term operation and continuous improvement:
-              </p>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Award className="h-5 w-5 text-primary" />
-                    <h4 className="font-semibold">Government Funding</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Core infrastructure and basic features are funded by the Delhi Municipal Corporation
-                    under the Swachh Bharat Mission.
-                  </p>
-                </div>
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="h-5 w-5 text-success" />
-                    <h4 className="font-semibold">Premium Subscriptions</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Affordable premium plans (₹99/month) help fund advanced features, server costs,
-                    and platform improvements.
-                  </p>
-                </div>
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <HeartHandshake className="h-5 w-5 text-warning" />
-                    <h4 className="font-semibold">Citizen Donations</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Voluntary contributions from citizens directly support ward-level clean-up initiatives
-                    and awareness campaigns.
-                  </p>
-                </div>
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Building2 className="h-5 w-5 text-info" />
-                    <h4 className="font-semibold">Corporate Partnerships</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    CSR partnerships with organizations help fund large-scale projects and infrastructure
-                    improvements.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                <p className="text-sm">
-                  <strong>100% Transparency:</strong> All revenue is used exclusively for platform
-                  maintenance, data collection, and community initiatives. Financial reports are
-                  published quarterly on our official website.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
     </Layout>

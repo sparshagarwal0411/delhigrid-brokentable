@@ -66,17 +66,6 @@ interface Complaint {
   description: string;
 }
 
-// --- Helper: Generate Stable Mock Coordinates for Wards ---
-// Since we don't have real lat/lng for 250 wards in the type, we simulate them within Delhi
-const getWardCoordinates = (id: number) => {
-  const baseLat = 28.6139;
-  const baseLng = 77.2090;
-  // Deterministic offset based on ID
-  const latOffset = (Math.sin(id * 12.9898) * 0.15);
-  const lngOffset = (Math.cos(id * 78.233) * 0.18);
-  return [baseLat + latOffset, baseLng + lngOffset] as [number, number];
-};
-
 // --- Constants ---
 const CATEGORY_COLORS: Record<string, string> = {
   Air: '#3b82f6', Water: '#06b6d4', Soil: '#854d0e', Transport: '#64748b', Noise: '#eab308'
@@ -269,7 +258,7 @@ export function DelhiMap() {
 
                   {/* MODE: WARDS (250 Pins) */}
                   {mapViewMode === 'wards' && filteredWards.map((ward) => {
-                    const coords = getWardCoordinates(ward.id);
+                    const coords = [ward.coordinates.lat, ward.coordinates.lng] as [number, number];
                     const color = getHexColorForWard(ward.pollutionScore);
                     const isSelected = selectedMapWard?.id === ward.id;
 

@@ -13,15 +13,13 @@ export interface Complaint {
     ward_number: number;
 }
 
-// Helper: Generate Stable Mock Coordinates for Wards
-// We use the same deterministic logic as in DelhiMap.tsx to ensure consistency
-const getWardCoordinates = (id: number) => {
-    const baseLat = 28.6139;
-    const baseLng = 77.2090;
-    // Deterministic offset based on ID
-    const latOffset = (Math.sin(id * 12.9898) * 0.15);
-    const lngOffset = (Math.cos(id * 78.233) * 0.18);
-    return [baseLat + latOffset, baseLng + lngOffset] as [number, number];
+import { wards as allWards } from '@/data/wards';
+
+// Helper: Get accuracy coordinates for a ward with jitter
+const getWardCoordinates = (wardId: number) => {
+    const ward = allWards.find(w => w.id === wardId);
+    if (!ward) return [28.6139, 77.2090] as [number, number];
+    return [ward.coordinates.lat, ward.coordinates.lng] as [number, number];
 };
 
 const mapDbCategoryToUi = (dbCat: string): ComplaintCategory => {
